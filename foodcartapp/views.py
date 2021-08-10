@@ -62,9 +62,34 @@ def product_list_api(request):
 
 # {'products': [{'product': 2, 'quantity': 1}, {'product': 1, 'quantity': 1}, {'product': 3, 'quantity': 1}, {'product': 4, 'quantity': 1}, {'product': 6, 'quantity': 1}], 
 # 'firstname': 'юрий', 'lastname': 'Старовойт', 'phonenumber': '+79999788032', 'address': 'Брянск, горького 25'}
+REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
+def validate_order(order_info):
+    for field in REQUIRED_FIELDS:
+        field_value = order_info.get(field)
+        if not field_value:
+            raise ValueError(f'There is no {field} in request')
+        elif not isinstance(field_value, str):
+            raise ValueError((f'{field} is not a String. Or it can be blank.'))
+    products = order_info.get('products', {})
+    if not products:
+        raise ValueError('Products is blank!')
+    elif not isinstance(products, list):
+        raise ValueError('Products is not a list!')
+    for product in products:
+        if not product.get('product'):
+            raise ValueError('There is no product in products')
+        elif not product.get('quantity'):
+            raise ValueError('There is no quantity in products')
+
+    
 def save_order(order_info):
+    try:
+        validate_order(order_info)
+    except ValueError as e:
+        raise ValueError(e)
+
     products_in_order = order_info.get('products')
     if products_in_order:
         first_name = order_info.get('firstname')
@@ -81,15 +106,18 @@ def save_order(order_info):
                                                         delivery_address=delivery_address)
         for item in products_in_order:
             product = Product.objects.get(id=item.get('product'))
-            temp_element = OrderElement.objects.create(product=product, 
+            OrderElement.objects.create(product=product, 
                                                     quantity=item.get('quantity'),
                                                     order=new_order)
+    return {'status': 'Success'}
+
 
 @api_view(['POST'])
 def register_order(request):
     try:
         order_info = json.loads(request.body.decode())
         save_order(order_info)
-    except Exception:
-        return HttpResponse(status=500)
-    return Response({'status': "Successfull",})
+    except Exception as e:
+        return Response({'error': f"{e}"} ,status=400)
+    return Response({'status': 'Success'})
+
