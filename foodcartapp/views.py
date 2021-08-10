@@ -2,6 +2,8 @@ from django.http import JsonResponse, HttpResponse
 from django.templatetags.static import static
 import json
 import phonenumbers
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from .models import Product
 from .models import Order, OrderElement
@@ -83,11 +85,11 @@ def save_order(order_info):
                                                     quantity=item.get('quantity'),
                                                     order=new_order)
 
-
+@api_view(['POST'])
 def register_order(request):
     try:
         order_info = json.loads(request.body.decode())
         save_order(order_info)
     except Exception:
         return HttpResponse(status=500)
-    return JsonResponse({'status': "Successfull",})
+    return Response({'status': "Successfull",})
