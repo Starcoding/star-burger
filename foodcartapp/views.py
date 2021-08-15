@@ -4,7 +4,7 @@ import json
 import phonenumbers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, ValidationError
 
 from .models import Product
 from .models import Order, OrderElement
@@ -85,20 +85,22 @@ REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
     
 def save_order(order_info):
     products_in_order = order_info.get('products')
-    first_name = order_info.get('firstname')
-    last_name = order_info.get('lastname')
-    phone_number_from_order = phonenumbers.parse(order_info.get('phonenumber'), None)
-    phone_number = phone_number_from_order
-    delivery_address = order_info.get('address')
-    new_order, created = Order.objects.get_or_create(firstname=first_name,
-                                                    lastname=last_name,
-                                                    phonenumber=phone_number,
-                                                    address=delivery_address)
-    for item in products_in_order:
-        product = item.get('product')
-        OrderElement.objects.create(product=product, 
-                                                quantity=item.get('quantity'),
-                                                order=new_order)
+    if products_in_order:
+        first_name = order_info.get('firstname')
+        last_name = order_info.get('lastname')
+        phone_number_from_order = phonenumbers.parse(order_info.get('phonenumber'), None)
+        phone_number = phone_number_from_order
+        delivery_address = order_info.get('address')
+        new_order, created = Order.objects.get_or_create(firstname=first_name,
+                                                        lastname=last_name,
+                                                        phonenumber=phone_number,
+                                                        address=delivery_address)
+        for item in products_in_order:
+            product = item.get('product')
+            OrderElement.objects.create(product=product, 
+                                                    quantity=item.get('quantity'),
+                                                    order=new_order)
+    return {'status': 'Success'}
 
 
 @api_view(['POST'])
@@ -106,5 +108,5 @@ def register_order(request):
     order_serializer = OrderSerializer(data=request.data)
     order_serializer.is_valid(raise_exception=True)
     save_order(order_serializer.validated_data)
-    return JsonResponse(order_serializer.validated_data)
+    return Response({'status': 'Success'})
 
