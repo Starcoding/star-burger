@@ -1,12 +1,29 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.templatetags.static import static
 import json
 import phonenumbers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer, ValidationError
 
 from .models import Product
 from .models import Order, OrderElement
+
+
+
+class OrderElementSerializer(ModelSerializer):
+    class Meta:
+        model = OrderElement
+        fields = ['product', 'quantity']
+
+
+class OrderSerializer(ModelSerializer):
+    products = OrderElementSerializer(many=True, allow_empty=False)
+    class Meta:
+        model = Order
+        fields = ['firstname', 'lastname', 'phonenumber', 'address', 'products']
+
+
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -65,47 +82,21 @@ def product_list_api(request):
 REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
-def validate_order(order_info):
-    for field in REQUIRED_FIELDS:
-        field_value = order_info.get(field)
-        if not field_value:
-            raise ValueError(f'There is no {field} in request')
-        elif not isinstance(field_value, str):
-            raise ValueError((f'{field} is not a String. Or it can be blank.'))
-    products = order_info.get('products', {})
-    if not products:
-        raise ValueError('Products is blank!')
-    elif not isinstance(products, list):
-        raise ValueError('Products is not a list!')
-    for product in products:
-        if not product.get('product'):
-            raise ValueError('There is no product in products')
-        elif not product.get('quantity'):
-            raise ValueError('There is no quantity in products')
-
     
 def save_order(order_info):
-    try:
-        validate_order(order_info)
-    except ValueError as e:
-        raise ValueError(e)
-
     products_in_order = order_info.get('products')
     if products_in_order:
         first_name = order_info.get('firstname')
         last_name = order_info.get('lastname')
         phone_number_from_order = phonenumbers.parse(order_info.get('phonenumber'), None)
-        if phonenumbers.is_possible_number(phone_number_from_order) and phonenumbers.is_valid_number(phone_number_from_order):
-            phone_number = phone_number_from_order
-        else:
-            raise ValueError('Phone number is not valid!')
+        phone_number = phone_number_from_order
         delivery_address = order_info.get('address')
-        new_order, created = Order.objects.get_or_create(first_name=first_name,
-                                                        last_name=last_name,
-                                                        phone_number=phone_number,
-                                                        delivery_address=delivery_address)
+        new_order, created = Order.objects.get_or_create(firstname=first_name,
+                                                        lastname=last_name,
+                                                        phonenumber=phone_number,
+                                                        address=delivery_address)
         for item in products_in_order:
-            product = Product.objects.get(id=item.get('product'))
+            product = item.get('product')
             OrderElement.objects.create(product=product, 
                                                     quantity=item.get('quantity'),
                                                     order=new_order)
@@ -114,10 +105,8 @@ def save_order(order_info):
 
 @api_view(['POST'])
 def register_order(request):
-    try:
-        order_info = json.loads(request.body.decode())
-        save_order(order_info)
-    except Exception as e:
-        return Response({'error': f"{e}"} ,status=400)
+    order_serializer = OrderSerializer(data=request.data)
+    order_serializer.is_valid(raise_exception=True)
+    save_order(order_serializer.validated_data)
     return Response({'status': 'Success'})
 
