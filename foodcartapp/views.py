@@ -90,11 +90,10 @@ def save_order(order_info):
     phone_number_from_order = phonenumbers.parse(order_info.get('phonenumber'), None)
     phone_number = phone_number_from_order
     delivery_address = order_info.get('address')
-    new_order = Order.objects.create(firstname=first_name,
+    new_order = Order.info.create(firstname=first_name,
                                                     lastname=last_name,
                                                     phonenumber=phone_number,
                                                     address=delivery_address)
-    new_order.save()
     for item in products_in_order:
         product = OrderElement.objects.create(product=item.get('product'), 
                                                 quantity=item.get('quantity'),
