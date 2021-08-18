@@ -82,7 +82,7 @@ def product_list_api(request):
 REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
-    
+# TODO: Rework saving of new_order.
 def save_order(order_info):
     products_in_order = order_info.get('products')
     first_name = order_info.get('firstname')
@@ -95,10 +95,12 @@ def save_order(order_info):
                                                     phonenumber=phone_number,
                                                     address=delivery_address)
     for item in products_in_order:
-        product = OrderElement.objects.create(product=item.get('product'), 
+        product = Product.objects.get(name=item.get('product'))
+        element = OrderElement.objects.create(product=item.get('product'), 
                                                 quantity=item.get('quantity'),
-                                                order=new_order)
-        product.save()
+                                                order=new_order,
+                                                price=product.price)
+        element.save()
     return new_order
     
 

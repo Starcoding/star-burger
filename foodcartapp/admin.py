@@ -107,14 +107,21 @@ class ProductAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     pass
 
+@admin.register(OrderElement)
+class OrderElementAdmin(admin.ModelAdmin):
+    list_display = ('id','product', 'quantity', 'price',)
+    readonly_fields=('price', )
 
 class OrderElementInline(admin.TabularInline):
     model = OrderElement
+    readonly_fields = ['price',]
     extra = 0
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('firstname', 'lastname', 'address', 'phonenumber')
+    list_display = ('id','firstname', 'lastname', 'address', 'phonenumber',)
     inlines = [
         OrderElementInline
     ]
+
+

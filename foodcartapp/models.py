@@ -128,7 +128,7 @@ class RestaurantMenuItem(models.Model):
 
 class OrderQuerySet(models.QuerySet):
     def price(self):
-        return self.annotate(total_sum=Sum(F('order_elements__product__price') * F('order_elements__quantity')))
+        return self.annotate(total_sum=Sum(F('order_elements__price') * F('order_elements__quantity')))
         # return Order.objects.annotate(total_sum=Sum(F('order_elements__product__price') * F('order_elements__quantity')))
 # q = Order.objects.annotate(total_sum=Sum(F('order_elements__product__price') * F('order_elements__quantity')))
 # q.filter(id=55).first().total_sum - тут лежит по 55 сумма по всем элементам
@@ -175,6 +175,12 @@ class OrderElement(models.Model):
         related_name='order_elements',
         verbose_name='заказ',
         blank=True
+    )
+    price = models.DecimalField(
+        'цена',
+        validators=[MinValueValidator(0)],
+        max_digits=10,
+        decimal_places=2
     )
 
     class Meta:
