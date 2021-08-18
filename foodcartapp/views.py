@@ -5,7 +5,7 @@ import phonenumbers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
-
+from django.db import transaction
 from .models import Product
 from .models import Order, OrderElement
 
@@ -82,7 +82,8 @@ def product_list_api(request):
 REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
-# TODO: Rework saving of new_order.
+
+
 def save_order(order_info):
     products_in_order = order_info.get('products')
     first_name = order_info.get('firstname')
@@ -104,12 +105,16 @@ def save_order(order_info):
     return new_order
     
 
-
+@transaction.atomic
 @api_view(['POST'])
 def register_order(request):
     order_serializer = OrderSerializer(data=request.data)
     order_serializer.is_valid(raise_exception=True)
-    saved_order = save_order(order_serializer.validated_data)
+    try:
+        with transaction.atomic():
+            saved_order = save_order(order_serializer.validated_data)
+    except Exception as e:
+        return Response({'error': f'Error occured: {e}'})
     response = {
         "id": saved_order.id,
         "firstname": saved_order.firstname,
