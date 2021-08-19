@@ -158,11 +158,27 @@ class Order(models.Model):
         (COMPLETED, 'Выполнен'),
     ]
     status = models.CharField(
+        'Статус заказа',
         max_length=2,
         choices=STATUSES,
         default=NOT_PROCESSED,
     )
+    CASH = 'CS'
+    CARD_TO_COURIER = 'CC'
+    CARD_ONLINE = "CO"
+    PAYMENT_TYPES = [
+        (CASH, 'Наличные'),
+        (CARD_TO_COURIER, 'Картой курьеру'),
+        (CARD_ONLINE, 'Картой онлайн'),
+    ]
+    payment_type = models.CharField(
+        'Вид оплаты',
+        max_length=2,
+        choices=PAYMENT_TYPES,
+        default=CASH,
+    )
     comment = models.TextField(
+        'Комментарий',
         blank=True
     )
     registration_date = models.DateTimeField(
@@ -179,6 +195,7 @@ class Order(models.Model):
         blank=True,
         null=True
     )
+    
     info = OrderQuerySet.as_manager()
 
     class Meta:
