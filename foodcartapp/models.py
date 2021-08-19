@@ -149,6 +149,19 @@ class Order(models.Model):
         'адрес доставки',
         max_length=100
     )
+    NOT_PROCESSED = 'NP'
+    CANCELLED = 'CC'
+    COMPLETED = 'CM'
+    STATUSES = [
+        (NOT_PROCESSED, 'Необработанный'),
+        (CANCELLED, 'Отменён'),
+        (COMPLETED, 'Выполнен'),
+    ]
+    status = models.CharField(
+        max_length=2,
+        choices=STATUSES,
+        default=NOT_PROCESSED,
+    )
     info = OrderQuerySet.as_manager()
 
     class Meta:
