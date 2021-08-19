@@ -162,6 +162,9 @@ class Order(models.Model):
         choices=STATUSES,
         default=NOT_PROCESSED,
     )
+    comment = models.TextField(
+        blank=True
+    )
     info = OrderQuerySet.as_manager()
 
     class Meta:
