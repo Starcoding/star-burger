@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
 
-from foodcartapp.models import OrderElement, Product, Restaurant, Order
+from foodcartapp.models import OrderElement, Product, Restaurant, Order, RestaurantMenuItem
 
 
 class Login(forms.Form):
@@ -95,9 +95,38 @@ def view_restaurants(request):
     })
 
 
-
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    original_orders = Order.info.price()
+    extended_orders = []
+    restaurants = [restaurant.name for restaurant in Restaurant.objects.all()]
+    for order in original_orders:
+        extended_order = {'id': order.id,
+        'get_status_display': order.get_status_display,
+        'get_payment_type_display': order.total_sum,
+        'total_sum': order.total_sum,
+        'firstname': order.firstname,
+        'lastname': order.lastname,
+        'phonenumber': order.phonenumber,
+        'comment': order.comment,
+        'address': order.address,
+        'vacant_restaurants': [],
+        }
+        order_elements = OrderElement.objects.filter(order=order)
+        vacant_restaurants = restaurants.copy()
+        for order_element in order_elements:
+            order_element_restaurants = [possible_restaurant.restaurant.name for possible_restaurant in RestaurantMenuItem.objects.filter(product=order_element.product)] # рестораны которые могут приготовить продукт из элемента заказа
+            for reference_restaurant in restaurants:
+                print(order_element_restaurants)
+                if reference_restaurant not in order_element_restaurants:
+                    try:
+                        vacant_restaurants.remove(reference_restaurant)
+                    except ValueError:
+                        pass
+        extended_order['vacant_restaurants'] = vacant_restaurants
+        extended_orders.append(extended_order)
+
+
     return render(request, template_name='order_items.html', context={
-        'order_items': Order.info.price(),
+        'order_items': extended_orders,
     })

@@ -129,9 +129,7 @@ class RestaurantMenuItem(models.Model):
 class OrderQuerySet(models.QuerySet):
     def price(self):
         return self.annotate(total_sum=Sum(F('order_elements__price') * F('order_elements__quantity')))
-        # return Order.objects.annotate(total_sum=Sum(F('order_elements__product__price') * F('order_elements__quantity')))
-# q = Order.objects.annotate(total_sum=Sum(F('order_elements__product__price') * F('order_elements__quantity')))
-# q.filter(id=55).first().total_sum - тут лежит по 55 сумма по всем элементам
+
 
 class Order(models.Model):
     firstname = models.CharField(
@@ -180,6 +178,14 @@ class Order(models.Model):
     comment = models.TextField(
         'Комментарий',
         blank=True
+    )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        verbose_name='ресторан',
+        related_name='orders',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
     )
     registration_date = models.DateTimeField(
         'Время регистрации заказа',

@@ -82,8 +82,6 @@ def product_list_api(request):
 REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
-
-
 def save_order(order_info):
     products_in_order = order_info.get('products')
     first_name = order_info.get('firstname')
@@ -95,6 +93,7 @@ def save_order(order_info):
                                                     lastname=last_name,
                                                     phonenumber=phone_number,
                                                     address=delivery_address)
+    new_order.save()
     for item in products_in_order:
         product = Product.objects.get(name=item.get('product'))
         element = OrderElement.objects.create(product=item.get('product'), 

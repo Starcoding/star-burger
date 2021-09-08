@@ -121,7 +121,7 @@ class OrderElementInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id','firstname', 'lastname', 'address', 'phonenumber',)
+    list_display = ('id','firstname', 'lastname', 'address', 'restaurant', 'phonenumber',)
     inlines = [
         OrderElementInline
     ]
