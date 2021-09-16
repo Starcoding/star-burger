@@ -9,6 +9,13 @@ from django.contrib.auth import views as auth_views
 
 
 from foodcartapp.models import OrderElement, Product, Restaurant, Order, RestaurantMenuItem
+from environs import Env
+import requests
+from geopy import distance
+
+env = Env()
+env.read_env()
+YANDEX_KEY = env('YANDEX_KEY')
 
 
 class Login(forms.Form):
@@ -95,11 +102,50 @@ def view_restaurants(request):
     })
 
 
+
+def fetch_coordinates(address):
+    base_url = "https://geocode-maps.yandex.ru/1.x"
+    response = requests.get(base_url, params={
+        "geocode": address,
+        "apikey": YANDEX_KEY,
+        "format": "json",
+    })
+    response.raise_for_status()
+    found_places = response.json()['response']['GeoObjectCollection']['featureMember']
+
+    if not found_places:
+        return None
+
+    most_relevant = found_places[0]
+    lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
+    return lon, lat
+
+
+def fetch_distances(orders):
+    extended_orders = []
+    for order in orders:
+        temp_order = order.copy()
+        order_coordinates = fetch_coordinates(temp_order['address'])
+        vacant_restaurants = temp_order['vacant_restaurants']['restaurant']
+        print(vacant_restaurants)
+        for restaurant in vacant_restaurants:
+            print('before',restaurant)
+            restaurant_coordinates = fetch_coordinates(restaurant['address'])
+            restaurant.update({'distance': round(distance.distance(order_coordinates, restaurant_coordinates).km, 3)})
+            print('after',restaurant)
+            del restaurant
+        extended_orders.append(temp_order)
+        del temp_order
+    return extended_orders
+
+
+
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    number = 0
     original_orders = Order.info.price()
     extended_orders = []
-    restaurants = [restaurant.name for restaurant in Restaurant.objects.all()]
+    restaurants = [{'name': restaurant.name, 'address': restaurant.address} for restaurant in Restaurant.objects.all()]
     for order in original_orders:
         extended_order = {'id': order.id,
         'get_status_display': order.get_status_display,
@@ -115,18 +161,17 @@ def view_orders(request):
         order_elements = OrderElement.objects.filter(order=order)
         vacant_restaurants = restaurants.copy()
         for order_element in order_elements:
-            order_element_restaurants = [possible_restaurant.restaurant.name for possible_restaurant in RestaurantMenuItem.objects.filter(product=order_element.product)] # рестораны которые могут приготовить продукт из элемента заказа
+            order_element_restaurants = [{'name': possible_restaurant.restaurant.name, 'address': possible_restaurant.restaurant.address} for 
+                                         possible_restaurant in RestaurantMenuItem.objects.filter(product=order_element.product)]
             for reference_restaurant in restaurants:
-                print(order_element_restaurants)
                 if reference_restaurant not in order_element_restaurants:
                     try:
                         vacant_restaurants.remove(reference_restaurant)
                     except ValueError:
                         pass
-        extended_order['vacant_restaurants'] = vacant_restaurants
+        extended_order['vacant_restaurants'] = {'restaurant': vacant_restaurants}
         extended_orders.append(extended_order)
-
-
+    orders = fetch_distances(extended_orders)
     return render(request, template_name='order_items.html', context={
-        'order_items': extended_orders,
+        'order_items': orders,
     })

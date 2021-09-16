@@ -41,9 +41,11 @@
             {% if item.restaurant %}
             {{item.restaurant}}
             {% else %}
-            {% for vacant_restaurant in item.vacant_restaurants %}
-            {{ vacant_restaurant }}
+            <ul>
+            {% for vacant_restaurant in item.vacant_restaurants.restaurant %}
+            <li>{{ vacant_restaurant.name }} - {{ vacant_restaurant.distance }} км.</li>
             {% endfor %}
+            </ul>
             {% endif %}
           </details>
         </td>
