@@ -27,22 +27,22 @@
 
     {% for item in order_items %}
       <tr>
-        <td>{{item.id}}</td>
-        <td>{{item.get_status_display}}</td>
-        <td>{{item.get_payment_type_display}}</td>
-        <td>{{item.total_sum}}</td>
-        <td>{{item.firstname}} {{item.lastname}}</td>
-        <td>{{item.phonenumber}}</td>
-        <td>{{item.comment}}</td>
-        <td>{{item.address}}</td>
+        <td>{{item.order.id}}</td>
+        <td>{{item.order.get_status_display}}</td>
+        <td>{{item.order.get_payment_type_display}}</td>
+        <td>{{item.order.total_sum}}</td>
+        <td>{{item.order.firstname}} {{item.order.lastname}}</td>
+        <td>{{item.order.phonenumber}}</td>
+        <td>{{item.order.comment}}</td>
+        <td>{{item.order.address}}</td>
         <td>
           <details>
             <summary>Развернуть</summary>
-            {% if item.restaurant %}
-            {{item.restaurant}}
+            {% if item.order.restaurant %}
+            {{item.order.restaurant}}
             {% else %}
             <ul>
-            {% for vacant_restaurant in item.vacant_restaurants.restaurant %}
+            {% for vacant_restaurant in item.vacant_restaurants %}
             <li>{{ vacant_restaurant.name }} - {{ vacant_restaurant.distance }} км.</li>
             {% endfor %}
             </ul>
@@ -50,7 +50,7 @@
           </details>
         </td>
         <td>
-          <a href="{% url 'admin:foodcartapp_order_change' item.id %}?next={{ request.get_full_path|urlencode }}">Редактировать</a>
+          <a href="{% url 'admin:foodcartapp_order_change' item.order.id %}?next={{ request.get_full_path|urlencode }}">Редактировать</a>
         </td>
       </tr>
     {% endfor %}
