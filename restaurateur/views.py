@@ -12,7 +12,6 @@ from coordinates.models import Coordinates
 from foodcartapp.models import OrderElement, Product, Restaurant, Order, RestaurantMenuItem
 from environs import Env
 import copy
-import random
 import requests
 from geopy import distance
 
@@ -153,19 +152,23 @@ def view_orders(request):
         order_coordinates = fetch_coordinates(order.address, coordinates)
         vacant_restaurants = []
         for restaurant in temp_restaurants:
-            restaurant_coordinates = fetch_coordinates(restaurant['address'], coordinates)
-            restaurant['distance'] = copy.copy(round(distance.distance(order_coordinates, restaurant_coordinates).km, 3))
+            restaurant_coordinates = fetch_coordinates(restaurant['address'],
+                                                       coordinates)
+            restaurant['distance'] = copy.copy(round(distance.distance(order_coordinates,
+                                                                       restaurant_coordinates).km, 3))
             vacant_restaurants.append(restaurant.copy())
         for order_element in order_elements:
-            order_element_restaurants = [{'name': possible_restaurant.restaurant.name, 'address': possible_restaurant.restaurant.address} for 
-                                         possible_restaurant in RestaurantMenuItem.objects.filter(product=order_element.product)]
+            order_element_restaurants = [
+                {'name': possible_restaurant.restaurant.name,
+                 'address': possible_restaurant.restaurant.address} for possible_restaurant in RestaurantMenuItem.objects.filter(product=order_element.product)]
             for reference_restaurant in restaurants:
                 if reference_restaurant not in order_element_restaurants:
                     try:
                         vacant_restaurants.remove(reference_restaurant)
                     except ValueError:
                         pass
-        extended_orders.append({'order': order, 'vacant_restaurants': vacant_restaurants,})
+        extended_orders.append({'order': order,
+                                'vacant_restaurants': vacant_restaurants})
     return render(request, template_name='order_items.html', context={
         'order_items': extended_orders,
     })

@@ -1,6 +1,5 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
-import json
 import phonenumbers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -17,11 +16,14 @@ class OrderElementSerializer(ModelSerializer):
 
 
 class OrderSerializer(ModelSerializer):
-    products = OrderElementSerializer(write_only=True, many=True, allow_empty=False)
+    products = OrderElementSerializer(write_only=True,
+                                      many=True,
+                                      allow_empty=False)
+
     class Meta:
         model = Order
-        fields = ['id', 'firstname', 'lastname', 'phonenumber', 'address', 'products']
-
+        fields = ['id', 'firstname', 'lastname',
+                  'phonenumber', 'address', 'products']
 
 
 def banners_list_api(request):
@@ -83,23 +85,24 @@ def save_order(order_info):
     products_in_order = order_info.get('products')
     first_name = order_info.get('firstname')
     last_name = order_info.get('lastname')
-    phone_number_from_order = phonenumbers.parse(order_info.get('phonenumber'), None)
+    phone_number_from_order = phonenumbers.parse(order_info.get(
+                                                 'phonenumber'), None)
     phone_number = phone_number_from_order
     delivery_address = order_info.get('address')
     new_order = Order.info.create(firstname=first_name,
-                                                    lastname=last_name,
-                                                    phonenumber=phone_number,
-                                                    address=delivery_address)
+                                  lastname=last_name,
+                                  phonenumber=phone_number,
+                                  address=delivery_address)
     new_order.save()
     for item in products_in_order:
         product = Product.objects.get(name=item.get('product'))
-        element = OrderElement.objects.create(product=item.get('product'), 
-                                                quantity=item.get('quantity'),
-                                                order=new_order,
-                                                price=product.price)
+        element = OrderElement.objects.create(product=item.get('product'),
+                                              quantity=item.get('quantity'),
+                                              order=new_order,
+                                              price=product.price)
         element.save()
     return new_order
-    
+
 
 @transaction.atomic
 @api_view(['POST'])
@@ -119,4 +122,3 @@ def register_order(request):
         "address": saved_order.address,
     }
     return Response(response)
-
