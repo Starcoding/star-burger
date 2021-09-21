@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import user_passes_test
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
-from django.db.models import Value
+
+from coordinates.models import Coordinates
 
 from foodcartapp.models import OrderElement, Product, Restaurant, Order, RestaurantMenuItem
 from environs import Env
@@ -104,8 +105,7 @@ def view_restaurants(request):
     })
 
 
-
-def fetch_coordinates(address):
+def fetch_coordinates_from_geocoder(address):
     base_url = "https://geocode-maps.yandex.ru/1.x"
     response = requests.get(base_url, params={
         "geocode": address,
@@ -118,12 +118,26 @@ def fetch_coordinates(address):
         return None
     most_relevant = found_places[0]
     lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
+    Coordinates.objects.create(address=address, longtitude=lon, latitude=lat)
     return lon, lat
+
+
+def fetch_coordinates(address, coordinates):
+    if coordinates:
+        order_address = coordinates.filter(address=address).first()
+        if order_address:
+            lon = order_address.longtitude
+            lat = order_address.latitude
+            return lon, lat
+        else:
+            return fetch_coordinates_from_geocoder(address)
+    else:
+        return fetch_coordinates_from_geocoder(address)
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-
+    coordinates = Coordinates.objects.all()
     original_orders = Order.info.price()
     restaurants = []
     for restaurant in Restaurant.objects.all():
@@ -136,10 +150,10 @@ def view_orders(request):
     for order in original_orders:
         temp_restaurants = copy.deepcopy(restaurants)
         order_elements = OrderElement.objects.filter(order=order)
-        order_coordinates = fetch_coordinates(order.address)
+        order_coordinates = fetch_coordinates(order.address, coordinates)
         vacant_restaurants = []
         for restaurant in temp_restaurants:
-            restaurant_coordinates = fetch_coordinates(restaurant['address'])
+            restaurant_coordinates = fetch_coordinates(restaurant['address'], coordinates)
             restaurant['distance'] = copy.copy(round(distance.distance(order_coordinates, restaurant_coordinates).km, 3))
             vacant_restaurants.append(restaurant.copy())
         for order_element in order_elements:
