@@ -137,6 +137,7 @@ class Order(models.Model):
     CASH = 'CS'
     CARD_TO_COURIER = 'CC'
     CARD_ONLINE = "CO"
+    CHECK_WITH_CLIENT = "CW"
     NOT_PROCESSED = 'NP'
     CANCELLED = 'CC'
     COMPLETED = 'CM'
@@ -173,12 +174,13 @@ class Order(models.Model):
         (CASH, 'Наличные'),
         (CARD_TO_COURIER, 'Картой курьеру'),
         (CARD_ONLINE, 'Картой онлайн'),
+        (CHECK_WITH_CLIENT, 'Уточнить у клиента тип оплаты'),
     ]
     payment_type = models.CharField(
         'Вид оплаты',
         max_length=2,
         choices=PAYMENT_TYPES,
-        default=CASH,
+        default=CHECK_WITH_CLIENT,
         db_index=True,
     )
     comment = models.TextField(
