@@ -154,7 +154,8 @@ class Order(models.Model):
         max_length=50
     )
     phonenumber = PhoneNumberField(
-        'номер телефона'
+        'номер телефона',
+        db_index=True,
     )
     address = models.CharField(
         'адрес доставки',
@@ -166,6 +167,7 @@ class Order(models.Model):
         max_length=2,
         choices=STATUSES,
         default=NOT_PROCESSED,
+        db_index=True,
     )
     PAYMENT_TYPES = [
         (CASH, 'Наличные'),
@@ -177,6 +179,7 @@ class Order(models.Model):
         max_length=2,
         choices=PAYMENT_TYPES,
         default=CASH,
+        db_index=True,
     )
     comment = models.TextField(
         'Комментарий',
@@ -192,17 +195,20 @@ class Order(models.Model):
     )
     registration_date = models.DateTimeField(
         'Время регистрации заказа',
-        default=timezone.now
+        default=timezone.now,
+        db_index=True,
     )
     call_date = models.DateTimeField(
         'Время звонка',
         blank=True,
-        null=True
+        null=True,
+        db_index=True,
     )
     delivery_date = models.DateTimeField(
         'Когда доставлено',
         blank=True,
-        null=True
+        null=True,
+        db_index=True,
     )
     additional_set = OrderQuerySet.as_manager()
 
