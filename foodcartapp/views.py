@@ -82,17 +82,17 @@ REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
 def save_order(order_info):
-    products_in_order = order_info.get('products')
-    first_name = order_info.get('firstname')
-    last_name = order_info.get('lastname')
-    phone_number_from_order = phonenumbers.parse(order_info.get(
+    products_in_order = order_serializer.validated_data.get('products')
+    first_name = order_serializer.validated_data.get('firstname')
+    last_name = order_serializer.validated_data.get('lastname')
+    phone_number_from_order = phonenumbers.parse(order_serializer.validated_data.get(
                                                  'phonenumber'), None)
     phone_number = phone_number_from_order
-    delivery_address = order_info.get('address')
-    new_order = Order.info.create(firstname=first_name,
-                                  lastname=last_name,
-                                  phonenumber=phone_number,
-                                  address=delivery_address)
+    delivery_address = order_serializer.validated_data.get('address')
+    new_order = Order.additional_set.create(firstname=first_name,
+                                            lastname=last_name,
+                                            phonenumber=phone_number,
+                                            address=delivery_address)
     new_order.save()
     for item in products_in_order:
         product = Product.objects.get(name=item.get('product'))
@@ -110,15 +110,32 @@ def register_order(request):
     order_serializer = OrderSerializer(data=request.data)
     order_serializer.is_valid(raise_exception=True)
     try:
-        with transaction.atomic():
-            saved_order = save_order(order_serializer.validated_data)
+        products_in_order = order_serializer.validated_data.get('products')
+        first_name = order_serializer.validated_data.get('firstname')
+        last_name = order_serializer.validated_data.get('lastname')
+        phone_number_from_order = phonenumbers.parse(order_serializer.validated_data.get(
+                                                     'phonenumber'), None)
+        phone_number = phone_number_from_order
+        delivery_address = order_serializer.validated_data.get('address')
+        new_order = Order.additional_set.create(firstname=first_name,
+                                                lastname=last_name,
+                                                phonenumber=phone_number,
+                                                address=delivery_address)
+        new_order.save()
+        for item in products_in_order:
+            product = Product.objects.get(name=item.get('product'))
+            element = OrderElement.objects.create(product=item.get('product'),
+                                                  quantity=item.get('quantity'),
+                                                  order=new_order,
+                                                  price=product.price)
+            element.save()
     except Exception as e:
         return Response({'error': f'Error occured: {e}'})
     response = {
-        "id": saved_order.id,
-        "firstname": saved_order.firstname,
-        "lastname": saved_order.lastname,
-        "phonenumber": str(saved_order.phonenumber),
-        "address": saved_order.address,
+        "id": new_order.id,
+        "firstname": new_order.firstname,
+        "lastname": new_order.lastname,
+        "phonenumber": str(new_order.phonenumber),
+        "address": new_order.address,
     }
     return Response(response)

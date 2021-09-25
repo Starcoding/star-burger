@@ -6,7 +6,6 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.http import HttpResponseRedirect
 
 from .models import Product
-from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order
@@ -105,23 +104,22 @@ class ProductAdmin(admin.ModelAdmin):
     get_image_list_preview.short_description = 'превью'
 
 
-@admin.register(ProductCategory)
-class ProductAdmin(admin.ModelAdmin):
-    pass
-
 @admin.register(OrderElement)
 class OrderElementAdmin(admin.ModelAdmin):
-    list_display = ('id','product', 'quantity', 'price',)
-    readonly_fields=('price', )
+    list_display = ('id', 'product', 'quantity', 'price',)
+    readonly_fields = ('price', )
+
 
 class OrderElementInline(admin.TabularInline):
     model = OrderElement
-    readonly_fields = ['price',]
+    readonly_fields = ['price', ]
     extra = 0
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id','firstname', 'lastname', 'address', 'restaurant', 'phonenumber',)
+    list_display = ('id', 'firstname', 'lastname', 'address',
+                    'restaurant', 'phonenumber',)
     inlines = [
         OrderElementInline
     ]
@@ -133,5 +131,3 @@ class OrderAdmin(admin.ModelAdmin):
                 return HttpResponseRedirect(request.GET['next'])
         else:
             return res
-
-

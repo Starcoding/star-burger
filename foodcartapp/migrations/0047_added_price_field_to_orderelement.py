@@ -2,11 +2,12 @@ from django.db import migrations
 from django.db import models
 from django.core.validators import MinValueValidator
 
+
 def set_price(apps, schema_editor):
     OrderElement = apps.get_model('foodcartapp', 'OrderElement')
     Product = apps.get_model('foodcartapp', 'Product')
 
-    for element in OrderElement.objects.all():
+    for element in OrderElement.objects.all().iterator():
         element.price = Product.objects.get(name=element.product.name).price
         element.save(update_fields=['price'])
 

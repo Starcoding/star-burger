@@ -137,7 +137,7 @@ def fetch_coordinates(address, coordinates):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     coordinates = Coordinates.objects.all()
-    original_orders = Order.info.price()
+    original_orders = Order.info.calculate_price()
     restaurants = []
     for restaurant in Restaurant.objects.all():
         temp_restaurant = {}

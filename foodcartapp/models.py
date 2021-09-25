@@ -127,13 +127,24 @@ class RestaurantMenuItem(models.Model):
 
 
 class OrderQuerySet(models.QuerySet):
-    def price(self):
+    def calculate_price(self):
         return self.annotate(
                              total_sum=Sum(F('order_elements__price') * F(
                                              'order_elements__quantity')))
 
 
 class Order(models.Model):
+    CASH = 'CS'
+    CARD_TO_COURIER = 'CC'
+    CARD_ONLINE = "CO"
+    NOT_PROCESSED = 'NP'
+    CANCELLED = 'CC'
+    COMPLETED = 'CM'
+    STATUSES = [
+        (NOT_PROCESSED, 'Необработанный'),
+        (CANCELLED, 'Отменён'),
+        (COMPLETED, 'Выполнен'),
+    ]
     firstname = models.CharField(
         'имя',
         max_length=50
@@ -149,23 +160,13 @@ class Order(models.Model):
         'адрес доставки',
         max_length=100
     )
-    NOT_PROCESSED = 'NP'
-    CANCELLED = 'CC'
-    COMPLETED = 'CM'
-    STATUSES = [
-        (NOT_PROCESSED, 'Необработанный'),
-        (CANCELLED, 'Отменён'),
-        (COMPLETED, 'Выполнен'),
-    ]
+
     status = models.CharField(
         'Статус заказа',
         max_length=2,
         choices=STATUSES,
         default=NOT_PROCESSED,
     )
-    CASH = 'CS'
-    CARD_TO_COURIER = 'CC'
-    CARD_ONLINE = "CO"
     PAYMENT_TYPES = [
         (CASH, 'Наличные'),
         (CARD_TO_COURIER, 'Картой курьеру'),
@@ -203,7 +204,7 @@ class Order(models.Model):
         blank=True,
         null=True
     )
-    info = OrderQuerySet.as_manager()
+    additional_set = OrderQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'заказ'
@@ -221,14 +222,13 @@ class OrderElement(models.Model):
     )
     quantity = models.IntegerField(
         'количество',
-        validators=[MinValueValidator(0)]
+        validators=[MinValueValidator(1)]
     )
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
         related_name='order_elements',
         verbose_name='заказ',
-        blank=True
     )
     price = models.DecimalField(
         'цена',
