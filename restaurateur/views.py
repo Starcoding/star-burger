@@ -10,14 +10,10 @@ from django.contrib.auth import views as auth_views
 from coordinates.models import Coordinates
 
 from foodcartapp.models import OrderElement, Product, Restaurant, Order, RestaurantMenuItem
-from environs import Env
 import copy
 import requests
 from geopy import distance
-
-env = Env()
-env.read_env()
-YANDEX_KEY = env('YANDEX_KEY')
+from star_burger.settings import YANDEX_KEY
 
 
 class Login(forms.Form):
@@ -137,7 +133,7 @@ def fetch_coordinates(address, coordinates):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     coordinates = Coordinates.objects.all()
-    original_orders = Order.info.calculate_price()
+    original_orders = Order.additional_set.calculate_price()
     restaurants = []
     for restaurant in Restaurant.objects.all():
         temp_restaurant = {}
