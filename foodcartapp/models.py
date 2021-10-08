@@ -201,7 +201,7 @@ class Order(models.Model):
         blank=True,
         null=True
     )
-    info = OrderQuerySet.as_manager()
+    objects = OrderQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'заказ'
