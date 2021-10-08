@@ -15,5 +15,4 @@ class Coordinates(models.Model):
     address = models.CharField(
         'адрес',
         max_length=100,
-        blank=True,
     )
