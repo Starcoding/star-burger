@@ -149,8 +149,8 @@ def view_orders(request):
         for restaurant in temp_restaurants:
             restaurant_coordinates = fetch_coordinates(restaurant['address'],
                                                        coordinates)
-            restaurant['distance'] = copy.copy(round(distance.distance(order_coordinates,
-                                                                       restaurant_coordinates).km, 3))
+            restaurant['distance'] = round(distance.distance(order_coordinates,
+                                                                       restaurant_coordinates).km, 3)
             vacant_restaurants.append(restaurant.copy())
         for order_element in order_elements:
             order_element_restaurants = [
