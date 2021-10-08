@@ -140,7 +140,6 @@ def view_orders(request):
         temp_restaurant['name'] = restaurant.name
         temp_restaurant['address'] = restaurant.address
         temp_restaurant['distance'] = -1
-        restaurants.append(temp_restaurant.copy())
     extended_orders = []
     for order in original_orders:
         temp_restaurants = copy.deepcopy(restaurants)
