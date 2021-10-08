@@ -61,7 +61,7 @@ class Product(models.Model):
     category = models.ForeignKey(
         ProductCategory,
         verbose_name='категория',
-        related_name='products',
+        related_name='category',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
