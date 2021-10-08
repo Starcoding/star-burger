@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import F, Sum 
+from django.db.models import F, Sum
 from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.utils import timezone
@@ -127,8 +127,10 @@ class RestaurantMenuItem(models.Model):
 
 
 class OrderQuerySet(models.QuerySet):
-    def price(self):
-        return self.annotate(total_sum=Sum(F('order_elements__price') * F('order_elements__quantity')))
+    def calculate_price(self):
+        return self.annotate(
+                             total_sum=Sum(F('order_elements__price') * F(
+                                             'order_elements__quantity')))
 
 
 class Order(models.Model):
@@ -157,7 +159,8 @@ class Order(models.Model):
         max_length=50
     )
     phonenumber = PhoneNumberField(
-        'номер телефона'
+        'номер телефона',
+        db_index=True,
     )
     address = models.CharField(
         'адрес доставки',
@@ -168,12 +171,14 @@ class Order(models.Model):
         max_length=2,
         choices=STATUSES,
         default=NOT_PROCESSED,
+        db_index=True,
     )
     payment_type = models.CharField(
         'Вид оплаты',
         max_length=2,
         choices=PAYMENT_TYPES,
-        default=CASH,
+        default=CHECK_WITH_CLIENT,
+        db_index=True,
     )
     comment = models.TextField(
         'Комментарий',
@@ -189,17 +194,20 @@ class Order(models.Model):
     )
     registration_date = models.DateTimeField(
         'Время регистрации заказа',
-        default=timezone.now
+        default=timezone.now,
+        db_index=True,
     )
     call_date = models.DateTimeField(
         'Время звонка',
         blank=True,
-        null=True
+        null=True,
+        db_index=True,
     )
     delivery_date = models.DateTimeField(
         'Когда доставлено',
         blank=True,
-        null=True
+        null=True,
+        db_index=True,
     )
     objects = OrderQuerySet.as_manager()
 
@@ -216,17 +224,17 @@ class OrderElement(models.Model):
         Product,
         on_delete=models.CASCADE,
         verbose_name='продукт',
+        related_name='products',
     )
     quantity = models.IntegerField(
         'количество',
-        validators=[MinValueValidator(0)]
+        validators=[MinValueValidator(1)]
     )
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
         related_name='order_elements',
         verbose_name='заказ',
-        blank=True
     )
     price = models.DecimalField(
         'цена',

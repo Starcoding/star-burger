@@ -1,6 +1,5 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
-import json
 import phonenumbers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -10,7 +9,6 @@ from .models import Product
 from .models import Order, OrderElement
 
 
-
 class OrderElementSerializer(ModelSerializer):
     class Meta:
         model = OrderElement
@@ -18,11 +16,14 @@ class OrderElementSerializer(ModelSerializer):
 
 
 class OrderSerializer(ModelSerializer):
-    products = OrderElementSerializer(write_only=True, many=True, allow_empty=False)
+    products = OrderElementSerializer(write_only=True,
+                                      many=True,
+                                      allow_empty=False)
+
     class Meta:
         model = Order
-        fields = ['id', 'firstname', 'lastname', 'phonenumber', 'address', 'products']
-
+        fields = ['id', 'firstname', 'lastname',
+                  'phonenumber', 'address', 'products']
 
 
 def banners_list_api(request):
@@ -80,42 +81,36 @@ def product_list_api(request):
 REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
-def save_order(order_info):
-    products_in_order = order_info.get('products')
-    first_name = order_info.get('firstname')
-    last_name = order_info.get('lastname')
-    phone_number_from_order = phonenumbers.parse(order_info.get('phonenumber'), None)
-    delivery_address = order_info.get('address')
-    new_order = Order.info.create(firstname=first_name,
-                                                    lastname=last_name,
-                                                    phonenumber=phone_number_from_order,
-                                                    address=delivery_address)
-    for item in products_in_order:
-        product = Product.objects.get(name=item.get('product'))
-        element = OrderElement.objects.create(product=item.get('product'), 
-                                                quantity=item.get('quantity'),
-                                                order=new_order,
-                                                price=product.price)
-        element.save()
-    return new_order
-    
-
 @transaction.atomic
 @api_view(['POST'])
 def register_order(request):
     order_serializer = OrderSerializer(data=request.data)
     order_serializer.is_valid(raise_exception=True)
     try:
-        with transaction.atomic():
-            saved_order = save_order(order_serializer.validated_data)
+        products_in_order = order_serializer.validated_data.get('products')
+        first_name = order_serializer.validated_data.get('firstname')
+        last_name = order_serializer.validated_data.get('lastname')
+        phone_number_from_order = phonenumbers.parse(order_serializer.validated_data.get(
+                                                     'phonenumber'), None)
+        delivery_address = order_serializer.validated_data.get('address')
+        new_order = Order.additional_set.create(firstname=first_name,
+                                                lastname=last_name,
+                                                phonenumber=phone_number_from_order,
+                                                address=delivery_address)
+        for item in products_in_order:
+            product = Product.objects.get(name=item.get('product'))
+            element = OrderElement.objects.create(product=item.get('product'),
+                                                  quantity=item.get('quantity'),
+                                                  order=new_order,
+                                                  price=product.price)
+            element.save()
     except Exception as e:
         return Response({'error': f'Error occured: {e}'})
     response = {
-        "id": saved_order.id,
-        "firstname": saved_order.firstname,
-        "lastname": saved_order.lastname,
-        "phonenumber": str(saved_order.phonenumber),
-        "address": saved_order.address,
+        "id": new_order.id,
+        "firstname": new_order.firstname,
+        "lastname": new_order.lastname,
+        "phonenumber": str(new_order.phonenumber),
+        "address": new_order.address,
     }
     return Response(response)
-

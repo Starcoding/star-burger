@@ -59,6 +59,14 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
+Создайте файл .env и укажите в нём переменные окружения:  
+```
+SECRET_KEY - секретный ключ джанги
+YANDEX_KEY - апи-ключ от ГеоКодера Яндекса
+```
+[Генератор ключа Django](https://djecrety.ir/)  
+[АПИ Ключ от Геокодера Яндекса](https://developer.tech.yandex.ru/)
+
 Запустите сервер:
 
 ```sh
