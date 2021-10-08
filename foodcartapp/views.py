@@ -77,8 +77,6 @@ def product_list_api(request):
     })
 
 
-# {'products': [{'product': 2, 'quantity': 1}, {'product': 1, 'quantity': 1}, {'product': 3, 'quantity': 1}, {'product': 4, 'quantity': 1}, {'product': 6, 'quantity': 1}], 
-# 'firstname': 'юрий', 'lastname': 'Старовойт', 'phonenumber': '+79999788032', 'address': 'Брянск, горького 25'}
 REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 

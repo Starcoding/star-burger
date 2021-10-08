@@ -132,6 +132,22 @@ class OrderQuerySet(models.QuerySet):
 
 
 class Order(models.Model):
+    NOT_PROCESSED = 'NP'
+    CANCELLED = 'CC'
+    COMPLETED = 'CM'
+    STATUSES = [
+        (NOT_PROCESSED, 'Необработанный'),
+        (CANCELLED, 'Отменён'),
+        (COMPLETED, 'Выполнен'),
+    ]
+    CASH = 'CS'
+    CARD_TO_COURIER = 'CC'
+    CARD_ONLINE = "CO"
+    PAYMENT_TYPES = [
+        (CASH, 'Наличные'),
+        (CARD_TO_COURIER, 'Картой курьеру'),
+        (CARD_ONLINE, 'Картой онлайн'),
+    ]
     firstname = models.CharField(
         'имя',
         max_length=50
@@ -147,28 +163,12 @@ class Order(models.Model):
         'адрес доставки',
         max_length=100
     )
-    NOT_PROCESSED = 'NP'
-    CANCELLED = 'CC'
-    COMPLETED = 'CM'
-    STATUSES = [
-        (NOT_PROCESSED, 'Необработанный'),
-        (CANCELLED, 'Отменён'),
-        (COMPLETED, 'Выполнен'),
-    ]
     status = models.CharField(
         'Статус заказа',
         max_length=2,
         choices=STATUSES,
         default=NOT_PROCESSED,
     )
-    CASH = 'CS'
-    CARD_TO_COURIER = 'CC'
-    CARD_ONLINE = "CO"
-    PAYMENT_TYPES = [
-        (CASH, 'Наличные'),
-        (CARD_TO_COURIER, 'Картой курьеру'),
-        (CARD_ONLINE, 'Картой онлайн'),
-    ]
     payment_type = models.CharField(
         'Вид оплаты',
         max_length=2,
@@ -201,7 +201,6 @@ class Order(models.Model):
         blank=True,
         null=True
     )
-    
     info = OrderQuerySet.as_manager()
 
     class Meta:
