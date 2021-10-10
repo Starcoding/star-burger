@@ -145,10 +145,12 @@ class Order(models.Model):
     CASH = 'CS'
     CARD_TO_COURIER = 'CC'
     CARD_ONLINE = "CO"
+    CHECK_WITH_CLIENT = 'CK'
     PAYMENT_TYPES = [
         (CASH, 'Наличные'),
         (CARD_TO_COURIER, 'Картой курьеру'),
         (CARD_ONLINE, 'Картой онлайн'),
+        (CHECK_WITH_CLIENT, 'Уточнить у клиента')
     ]
     firstname = models.CharField(
         'имя',
