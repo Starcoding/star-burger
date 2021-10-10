@@ -4,13 +4,13 @@ from django.db import models
 class Coordinates(models.Model):
     latitude = models.DecimalField(
         'широта',
-        max_digits=11,
+        max_digits=12,
         decimal_places=9,
         null=True
     )
     longtitude = models.DecimalField(
         'долгота',
-        max_digits=11,
+        max_digits=12,
         decimal_places=9,
         null=True
     )
@@ -19,3 +19,4 @@ class Coordinates(models.Model):
         max_length=100,
         unique=True
     )
+    created_at = models.DateTimeField(auto_now_add=True)
