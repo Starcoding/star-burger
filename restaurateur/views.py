@@ -13,7 +13,7 @@ from foodcartapp.models import OrderElement, Product, Restaurant, Order, Restaur
 import copy
 import requests
 from geopy import distance
-from star_burger.settings import YANDEX_KEY
+from django.conf import settings
 
 
 class Login(forms.Form):
@@ -104,7 +104,7 @@ def fetch_coordinates_from_geocoder(address):
     base_url = "https://geocode-maps.yandex.ru/1.x"
     response = requests.get(base_url, params={
         "geocode": address,
-        "apikey": YANDEX_KEY,
+        "apikey": settings.YANDEX_KEY,
         "format": "json",
     })
     response.raise_for_status()
@@ -118,50 +118,36 @@ def fetch_coordinates_from_geocoder(address):
 
 
 def fetch_coordinates(address, coordinates):
-    if coordinates:
-        order_address = coordinates.filter(address=address).first()
-        if order_address:
-            lon = order_address.longtitude
-            lat = order_address.latitude
+    for coordinate in coordinates:
+        if coordinate.address == address:
+            lon = coordinate.longtitude
+            lat = coordinate.latitude
             return lon, lat
-        else:
-            return fetch_coordinates_from_geocoder(address)
     else:
         return fetch_coordinates_from_geocoder(address)
 
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-
-    original_orders = Order.objects.price()
-    restaurants = []
-    for restaurant in Restaurant.objects.all():
-        temp_restaurant = {}
-        temp_restaurant['name'] = restaurant.name
-        temp_restaurant['address'] = restaurant.address
-        temp_restaurant['distance'] = -1
+    coordinates = list(Coordinates.objects.all())
+    orders = list(Order.objects.calculate_price().filter(status='NP').prefetch_related('order_elements__product'))
+    restaurants = Restaurant.objects.all()
+    restaurant_menu_items = RestaurantMenuItem.objects.all().prefetch_related('product').prefetch_related('restaurant')
     extended_orders = []
-    for order in original_orders:
-        temp_restaurants = copy.deepcopy(restaurants)
-        order_elements = OrderElement.objects.filter(order=order)
+    for order in orders:
+        vacant_restaurants = copy.copy(restaurants)
+        order_elements = order.order_elements.all()
         order_coordinates = fetch_coordinates(order.address, coordinates)
-        vacant_restaurants = []
-        for restaurant in temp_restaurants:
-            restaurant_coordinates = fetch_coordinates(restaurant['address'],
-                                                       coordinates)
-            restaurant['distance'] = round(distance.distance(order_coordinates,
-                                                                       restaurant_coordinates).km, 3)
-            vacant_restaurants.append(restaurant.copy())
         for order_element in order_elements:
-            order_element_restaurants = [
-                {'name': possible_restaurant.restaurant.name,
-                 'address': possible_restaurant.restaurant.address} for possible_restaurant in RestaurantMenuItem.objects.filter(product=order_element.product)]
-            for reference_restaurant in restaurants:
-                if reference_restaurant not in order_element_restaurants:
-                    try:
-                        vacant_restaurants.remove(reference_restaurant)
-                    except ValueError:
-                        pass
+            restaurants_with_items = []
+            for restaurant_menu_item in restaurant_menu_items:
+                if order_element.product == restaurant_menu_item.product:
+                    restaurants_with_items.append(restaurant_menu_item.restaurant)
+            vacant_restaurants = copy.deepcopy(set(vacant_restaurants).intersection(restaurants_with_items))
+        for vacant_restaurant in vacant_restaurants:
+            vacant_restaurant.coordinates = fetch_coordinates(vacant_restaurant.address, coordinates)
+            vacant_restaurant.distance = round(distance.distance(order_coordinates,
+                                                             vacant_restaurant.coordinates).km, 3)
         extended_orders.append({'order': order,
                                 'vacant_restaurants': vacant_restaurants})
     return render(request, template_name='order_items.html', context={
