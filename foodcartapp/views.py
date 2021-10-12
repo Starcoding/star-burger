@@ -81,26 +81,26 @@ def product_list_api(request):
 REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
-@transaction.atomic
+# @transaction.atomic
 @api_view(['POST'])
 def register_order(request):
     order_serializer = OrderSerializer(data=request.data)
     order_serializer.is_valid(raise_exception=True)
     try:
-        products_in_order = order_serializer.validated_data.get('products')
-        first_name = order_serializer.validated_data.get('firstname')
-        last_name = order_serializer.validated_data.get('lastname')
-        phone_number_from_order = phonenumbers.parse(order_serializer.validated_data.get(
-                                                     'phonenumber'), None)
-        delivery_address = order_serializer.validated_data.get('address')
-        new_order = Order.additional_set.create(firstname=first_name,
+        products_in_order = order_serializer.validated_data['products']
+        first_name = order_serializer.validated_data['firstname']
+        last_name = order_serializer.validated_data['lastname']
+        phone_number_from_order = phonenumbers.parse(order_serializer.validated_data[
+                                                     'phonenumber'], None)
+        delivery_address = order_serializer.validated_data['address']
+        new_order = Order.objects.create(firstname=first_name,
                                                 lastname=last_name,
                                                 phonenumber=phone_number_from_order,
                                                 address=delivery_address)
         for item in products_in_order:
-            product = Product.objects.get(name=item.get('product'))
-            element = OrderElement.objects.create(product=item.get('product'),
-                                                  quantity=item.get('quantity'),
+            product = Product.objects.get(name=item['product'])
+            element = OrderElement.objects.create(product=item['product'],
+                                                  quantity=item['quantity'],
                                                   order=new_order,
                                                   price=product.price)
             element.save()
