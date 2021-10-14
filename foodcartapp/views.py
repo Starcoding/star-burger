@@ -1,15 +1,12 @@
+import phonenumbers
+from django.db import transaction
 from django.http import JsonResponse
 from django.templatetags.static import static
-from django.db import transaction
-
-import phonenumbers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
-from .models import Product
-from .models import Order, OrderElement
-
+from .models import Order, OrderElement, Product
 
 
 class OrderElementSerializer(ModelSerializer):

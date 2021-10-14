@@ -1,6 +1,5 @@
-from django.db import migrations
-from django.db import models
 from django.core.validators import MinValueValidator
+from django.db import migrations, models
 
 
 def set_price(apps, schema_editor):
