@@ -19,4 +19,7 @@ class Coordinates(models.Model):
         max_length=100,
         unique=True
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        'создано',
+        auto_now_add=True
+        )
