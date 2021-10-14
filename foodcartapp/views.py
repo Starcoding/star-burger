@@ -106,7 +106,6 @@ def register_order(request):
                                                   quantity=item['quantity'],
                                                   order=new_order,
                                                   price=product.price)
-            element.save()
     except TypeError as e:
         return Response({'error': f'Error occured: {e}'})
     except ValueError as e:
