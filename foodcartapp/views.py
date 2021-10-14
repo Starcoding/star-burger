@@ -84,7 +84,7 @@ def product_list_api(request):
 REQUIRED_FIELDS = ['firstname', 'lastname', 'phonenumber', 'address']
 
 
-# @transaction.atomic
+@transaction.atomic
 @api_view(['POST'])
 def register_order(request):
     order_serializer = OrderSerializer(data=request.data)
@@ -106,10 +106,8 @@ def register_order(request):
                                                   quantity=item['quantity'],
                                                   order=new_order,
                                                   price=product.price)
-    except TypeError as e:
-        return Response({'error': f'Error occured: {e}'})
-    except ValueError as e:
-        return Response({'error': f'Error occured: {e}'})
+    except:
+        pass
     response = {
         "id": new_order.id,
         "firstname": new_order.firstname,
