@@ -12,6 +12,7 @@ from .models import Order
 from .models import OrderElement
 from restaurateur.views import view_orders
 
+
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
     extra = 0

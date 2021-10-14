@@ -3,17 +3,17 @@ from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
-
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from django.conf import settings
 
-from coordinates.models import Coordinates
-
-from foodcartapp.models import OrderElement, Product, Restaurant, Order, RestaurantMenuItem
 import copy
 import requests
 from geopy import distance
-from django.conf import settings
+
+from coordinates.models import Coordinates
+from foodcartapp.models import OrderElement, Product, Restaurant, Order, RestaurantMenuItem
+
 
 
 class Login(forms.Form):
