@@ -194,7 +194,7 @@ class Order(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
     )
-    registration_date = models.DateTimeField(
+    registration_at = models.DateTimeField(
         'Время регистрации заказа',
         default=timezone.now,
         db_index=True,
