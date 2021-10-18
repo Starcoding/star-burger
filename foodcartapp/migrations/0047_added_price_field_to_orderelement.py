@@ -5,7 +5,7 @@ from django.db import migrations, models
 def set_price(apps, schema_editor):
     OrderElement = apps.get_model('foodcartapp', 'OrderElement')
 
-    for element in OrderElement.objects.all().iterator():
+    for element in OrderElement.objects.all().prefetch_related('in_order_element').iterator():
         element.price = element.product.price
         element.save(update_fields=['price'])
 
