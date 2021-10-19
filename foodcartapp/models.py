@@ -226,7 +226,7 @@ class OrderElement(models.Model):
         Product,
         on_delete=models.CASCADE,
         verbose_name='продукт',
-        related_name='in_order_element',
+        related_name='order_elements',
     )
     quantity = models.IntegerField(
         'количество',
