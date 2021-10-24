@@ -158,7 +158,7 @@ parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 
 ## Демо-версия сайта
 Сайт размещён на Digital Ocean, в качестве веб-сервера выступает nginx, http сервер для Django - Gunicorn.  
-Домен сайта: [starburger.site](starburger.site)  
+Домен сайта: [starburger.site](https://starburger.site)  
 IP-адрес сервера: `157.230.117.103`  
 User: `root`  
 Для подключения к серверу необходим ssh-ключ.  
