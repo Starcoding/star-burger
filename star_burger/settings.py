@@ -15,7 +15,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 YANDEX_KEY = env('YANDEX_KEY')
 SECRET_KEY = env('SECRET_KEY', 'etirgvonenrfnoerngorenogneongg334g')
 DEBUG = env.bool('DEBUG', True)
-ROLLBAR_TOKEN = env('ROLLBAR_TOKEN')
+ROLLBAR_TOKEN = env('ROLLBAR_TOKEN', None)
 ROLLBAR_ENVIRONMENT = env('ROLLBAR_ENVIRONMENT', None)
 DATABASE_URL = env('DATABASE_URL')
 
@@ -45,20 +45,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
     'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404'
 ]
 
-
-local_repo = Repo(path=BASE_DIR)
-local_branch = local_repo.active_branch.name
-ROLLBAR = {
-    'access_token': ROLLBAR_TOKEN,
-    'environment': ROLLBAR_ENVIRONMENT if ROLLBAR_ENVIRONMENT else f'{BASE_DIR}, {local_branch}, Debug:{DEBUG}',
-    'root': BASE_DIR,
-    'branch': local_branch,
-}
-rollbar.init(**ROLLBAR)
+if ROLLBAR_TOKEN:
+    local_repo = Repo(path=BASE_DIR)
+    local_branch = local_repo.active_branch.name
+    ROLLBAR = {
+        'access_token': ROLLBAR_TOKEN,
+        'environment': ROLLBAR_ENVIRONMENT if ROLLBAR_ENVIRONMENT else f'{BASE_DIR}, {local_branch}, Debug:{DEBUG}',
+        'root': BASE_DIR,
+        'branch': local_branch,
+    }
+    rollbar.init(**ROLLBAR)
 
 ROOT_URLCONF = 'star_burger.urls'
 

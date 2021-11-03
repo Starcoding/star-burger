@@ -152,8 +152,8 @@ parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте. Не стоит использовать значение по-умолчанию, **замените на своё**.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_KEY` — секретный ключ от API Яндекса
-- `ROLLBAR_TOKEN` — секретный ключ для доступа к api Rollbar
-- `ROLLBAR_ENVIRONMENT` — Название окружения отображаемого на дашборде Rollbar'а, например: Production server
+- `ROLLBAR_TOKEN` — секретный ключ для доступа к api Rollbar (Данный токен можно не указывать, но тогда не будет работать Rollbar)
+- `ROLLBAR_ENVIRONMENT` — Название окружения отображаемого на дашборде Rollbar'а, например: Production server (Данный токен можно не указывать)
 - `DATABASE_URL` — строка подключения к БД Postgres в Django, например: postgres://*user*:*password*@*ip_address*:5432/*название_БД*
 
 ## Демо-версия сайта
