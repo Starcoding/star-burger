@@ -15,7 +15,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 YANDEX_KEY = env('YANDEX_KEY')
 SECRET_KEY = env('SECRET_KEY', 'etirgvonenrfnoerngorenogneongg334g')
 DEBUG = env.bool('DEBUG', True)
-ROLLBAR_TOKEN = env('ROLLBAR_TOKEN')
+ROLLBAR_TOKEN = env('ROLLBAR_TOKEN', None)
 ROLLBAR_ENVIRONMENT = env('ROLLBAR_ENVIRONMENT', None)
 DATABASE_URL = env('DATABASE_URL')
 
@@ -102,7 +102,7 @@ MEDIA_URL = '/media/'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=DATABASE_URL)
+        default=DATABASE_URL if DATABASE_URL else 'sqlite:////{0}'.format(os.path.join(BASE_DIR, 'db.sqlite3')))
 }
 
 AUTH_PASSWORD_VALIDATORS = [
