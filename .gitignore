@@ -10,9 +10,10 @@ __pycache__/
 *$py.class
 static/
 staticfiles/
-# C extensions
 *.so
-
+.bashrc
+.bashrc.swp
+dump.json
 # Distribution / packaging
 .Python
 build/
