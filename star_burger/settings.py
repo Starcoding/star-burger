@@ -45,20 +45,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
-    'rollbar.contrib.django.middleware.RollbarNotifierMiddleware',
     'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404'
 ]
 
-
-local_repo = Repo(path=BASE_DIR)
-local_branch = local_repo.active_branch.name
-ROLLBAR = {
-    'access_token': ROLLBAR_TOKEN,
-    'environment': ROLLBAR_ENVIRONMENT if ROLLBAR_ENVIRONMENT else f'{BASE_DIR}, {local_branch}, Debug:{DEBUG}',
-    'root': BASE_DIR,
-    'branch': local_branch,
-}
-rollbar.init(**ROLLBAR)
+if ROLLBAR_TOKEN:
+    local_repo = Repo(path=BASE_DIR)
+    local_branch = local_repo.active_branch.name
+    ROLLBAR = {
+        'access_token': ROLLBAR_TOKEN,
+        'environment': ROLLBAR_ENVIRONMENT if ROLLBAR_ENVIRONMENT else f'{BASE_DIR}, {local_branch}, Debug:{DEBUG}',
+        'root': BASE_DIR,
+        'branch': local_branch,
+    }
+    rollbar.init(**ROLLBAR)
 
 ROOT_URLCONF = 'star_burger.urls'
 
